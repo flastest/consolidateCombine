@@ -15,7 +15,7 @@ SRC       = mapreduce
 all: mapreduce
 
 mapreduce: mapreduce.o
-	$(CXX) $(CXX_STD) $(CXX_NODB) -o $(SRC) $(SRC).o
+	$(CXX) $(CXX_NODB) -o $(SRC) $(SRC).o
 
 debug: 
 	$(CXX) -o $(SRC) $(SRC).cc $(CXX_DB)

@@ -12,9 +12,9 @@ SRC       = mapreduce
 .cc.o:
 	$(CXX) $(CXX_NODB) -c -O3 $<
 
-all: pzip
+all: mapreduce
 
-pzip: pzip.o
+mapreduce: mapreduce.o
 	$(CXX) $(CXX_STD) $(CXX_NODB) -o $(SRC) $(SRC).o
 
 debug: 

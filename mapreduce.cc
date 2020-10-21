@@ -1,4 +1,4 @@
-#include "mapreduce.cc"
+#include "mapreduce.hh"
 
 void MapReduce::MR_Emit(const std::string& key, const std::string& value) {
 

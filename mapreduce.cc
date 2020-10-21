@@ -5,9 +5,9 @@ void MapReduce::MR_Emit(const std::string& key, const std::string& value) {
     return;
 }
 
-unsigned MapReduce::long MR_DefaultHashPartition(const std::string& key, int num_partitions) {
+unsigned long MapReduce::MR_DefaultHashPartition(const std::string& key, int num_partitions) {
 
-    return;
+    return 0;
 }
 
 void MapReduce::MR_Run(int argc, char* argv[],

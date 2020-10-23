@@ -1,6 +1,6 @@
 CXX       = g++
 CXX_STD   = -std=c++2a
-CXX_W     = -Wall -Wextra -Wpedantic
+CXX_W     = -Wall -Wextra -Wpedantic -g
 CXX_GDB   = -ggdb3 -Og
 # install libasan liblsan libubsan
 CXX_SAN   = -fsanitize=address,leak,undefined

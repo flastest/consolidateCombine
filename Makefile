@@ -14,6 +14,10 @@ SRC       = wc
 
 all: mapreduce
 
+eitan: 
+	g++ -Wall -Wextra -pedantic --std=c++17 -g -pthread mapreduce.cc  wc.cc -o wc
+
+
 wc: wc.o
 	$(CXX) $(CXX_NODB) -o $(SRC) $(SRC).o
 

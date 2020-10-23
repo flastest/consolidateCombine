@@ -1,23 +1,39 @@
 #include "mapreduce.hh"
-#include <iostream>
+#include <iostream>		//cout 
 #include <sstream>
 #include <fstream>
-#include <tuple>	//for tuple
+#include <map>			//for unordered map
+#include <unordered_map>//for unordered map 
+#include <memory> 		//for unique ptr to mutex array
+#include <mutex>		//for mutex
+#include <vector>
 
 #pragma once
 
-using kv_t = std::tuple<std::string, std::string>;
-//we need a shared data structure for the keys to be emitted to
+
+using map_t = std::unordered_map<std::string, std::vector<std::string>>;
+
+using mutex_ptr = std::unique_ptr<std::mutex>; //was originally a shared ptr
+using mutex_map_t = std::map<std::string, mutex_ptr>;
+
+// this is an example of what a lock will look like std::lock_guard<std::mutex> guard(*MUTEXES[KEY]);
+
+map_t emit_map; //this is where we emit mutexes to
+mutex_map_t mutexes; //there is one mutex in here for every vector in the emit map
 
 
 void MapReduce::MR_Emit(const std::string& key, const std::string& value) {
-	//make a kv pair
+	map_t::const_iterator found = emit_map.find(key);
 
-	// MAKE TUPLE HERE
-	
-	//then we put it in the big map that we have to reduce
+	//need a mechanism to determine if we're adding a rod that's already been added
+	if (found == emit_map.end()) {
+		mutexes[key] = mutex_ptr(new std::mutex);
+		//TODO create a new vector
+		emit_map[key] = std::vector<std::string>();
+	}
 
-	// I GUESS WE'LL HAVE A BIG MAP THAT WE PUT IT IN
+	std::lock_guard<std::mutex> guard(*mutexes[key]);
+	map[key].push_back(value);
 }
 
 unsigned long MapReduce::MR_DefaultHashPartition(const std::string& key, int num_partitions) {

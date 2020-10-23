@@ -32,4 +32,5 @@ void Reduce(std::string key, MapReduce::getter_t get_next, int partition_number)
 
 int main(int argc, char *argv[]) {
     MapReduce::MR_Run(argc, argv, Map, 10, Reduce, 10, MapReduce::MR_DefaultHashPartition);
+    return 0;
 }

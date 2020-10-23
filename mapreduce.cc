@@ -8,7 +8,6 @@
 #include <mutex>		//for mutex
 #include <vector>
 
-#pragma once
 
 
 using map_t = std::unordered_map<std::string, std::vector<std::string>>;

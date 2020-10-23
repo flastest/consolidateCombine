@@ -32,8 +32,10 @@ void MapReduce::MR_Emit(const std::string& key, const std::string& value) {
 		emit_map[key] = std::vector<std::string>();
 	}
 
-	std::lock_guard<std::mutex> guard(*mutexes[key]);
-	map[key].push_back(value);
+	{
+		std::lock_guard<std::mutex> guard(*mutexes[key]);
+		emit_map[key].push_back(value);
+	}
 }
 
 unsigned long MapReduce::MR_DefaultHashPartition(const std::string& key, int num_partitions) {

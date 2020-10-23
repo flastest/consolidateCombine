@@ -3,11 +3,6 @@
 #include <sstream>
 #include <fstream>
 
-int NUM_THREADS = 1; // single thread
-/*
-int NUM_THREADS = get_nprocs_conf(); // multi-thread
-*/
-
 void MapReduce::MR_Emit(const std::string& key, const std::string& value) {
 
     return;

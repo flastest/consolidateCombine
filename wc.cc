@@ -13,7 +13,7 @@ void Map(std::string file_name) {
     std::string line;
     std::string word;
     //this while loop iterates thru each word, delimiting at spaces, tabs, and newlines
-    while (getline(myfile, line,' ')) {
+    while (getline(myfile, line,' ')) { //TO DO: make this delimit tabs and spaces
         MapReduce::MR_Emit(word, "1");
         
     }

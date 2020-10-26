@@ -27,7 +27,6 @@ void MapReduce::MR_Emit(const std::string& key, const std::string& value) {
 	//need a mechanism to determine if we're adding a rod that's already been added
 	if (found == emit_map.end()) {
 		mutexes[key] = mutex_ptr(new std::mutex);
-		//TODO create a new vector
 		emit_map[key] = std::vector<std::string>();
 	}
 
@@ -37,9 +36,16 @@ void MapReduce::MR_Emit(const std::string& key, const std::string& value) {
 	}
 }
 
+//this should return the size of each slice
 unsigned long MapReduce::MR_DefaultHashPartition(const std::string& key, int num_partitions) {
 
-    return 0;
+	unsigned long hash = 5381;
+	char c;
+	for(c : key) //iterate thru the letters in key
+	{
+		hash = hash * 33 + (int) c;
+	}
+	return hash % num_partitions;
 }
 
 

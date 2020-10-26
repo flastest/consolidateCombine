@@ -27,7 +27,7 @@ mutex_map_t mutexes; //there is one mutex in here for every vector in the emit m
 void MapReduce::MR_Emit(const std::string& key, const std::string& value) {
 	int num_partitions = 4; 
 	bool found = false;
-	unsigned long shard_id = MR_DefaultHashPartition(key,num_partitions);
+	unsigned long shard_id = MR_DefaultHashPartition(key, num_partitions);
 		
 
 

@@ -9,30 +9,40 @@
 #include <vector>
 #include <tuple>                // for key/value pair
 
-using kv_t std::tuple<string,std::vector<std::string>>;
+
+using kv_t std::tuple<std::string,std::vector<std::string>>;
 using shard_t = std::vector<kv_t>;
+using shard_vector_t = std::vector<shard_t>;
+
 
 using mutex_ptr = std::unique_ptr<std::mutex>; //was originally a shared ptr
 using mutex_map_t = std::map<std::string, mutex_ptr>;
 
 // this is an example of what a lock will look like std::lock_guard<std::mutex> guard(*MUTEXES[KEY]);
 
-map_t emit_map; //this is where we emit mutexes to
+shard_vector_t emit_map[num_partitions];
 mutex_map_t mutexes; //there is one mutex in here for every vector in the emit map
 
 
 void MapReduce::MR_Emit(const std::string& key, const std::string& value) {
-	map_t::const_iterator found = emit_map.find(key);
+	int num_partitions = 4; 
+	bool found = false;
+	unsigned long shard_id = MR_DefaultHashPartition(key,num_partitions);
+		
 
-	//need a mechanism to determine if we're adding a rod that's already been added
-	if (found == emit_map.end()) {
-		mutexes[key] = mutex_ptr(new std::mutex);
-		emit_map[key] = std::vector<std::string>();
+
+	//iterate through each shard
+	for (kv_t kv : shard_vector_t[shard_id]) {
+		if (kv.first.compare(key) == 0) {
+			std::lock_guard<std::mutex> guard(*mutexes[key]);
+			kv.second.push_back(value);
+		}
 	}
+	
 
-	{
-		std::lock_guard<std::mutex> guard(*mutexes[key]);
-		emit_map[key].push_back(value);
+	if (!found) {
+		mutexes[key] = mutex_ptr(new std::mutex);
+		shard_vector_t[shard_id] = tuple<key, std::vector<std::string>()>;
 	}
 }
 
@@ -49,12 +59,17 @@ unsigned long MapReduce::MR_DefaultHashPartition(const std::string& key, int num
 }
 
 
+static std::string get_next(const std::string& key, int partition_number) {
+	//this somehow has to keep track of where we are when we're getting...
+}
 
 void MapReduce::MR_Run(int argc, char* argv[],
             mapper_t map, int num_mappers,
             reducer_t reduce, int num_reducers,
             partitioner_t partition) {
-	//we need to define a get_next for reducer_t
+	
+
+
 
     return;
 }

@@ -3,14 +3,14 @@
 #include <sstream>
 #include <fstream>
 #include <map>			//for unordered map
-#include <unordered_map>//for unordered map 
+#include <unordered_map>        //for unordered map 
 #include <memory> 		//for unique ptr to mutex array
 #include <mutex>		//for mutex
 #include <vector>
+#include <tuple>                // for key/value pair
 
-
-
-using map_t = std::unordered_map<std::string, std::vector<std::string>>;
+using kv_t std::tuple<string,std::vector<std::string>>;
+using shard_t = std::vector<kv_t>;
 
 using mutex_ptr = std::unique_ptr<std::mutex>; //was originally a shared ptr
 using mutex_map_t = std::map<std::string, mutex_ptr>;

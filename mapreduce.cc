@@ -10,7 +10,7 @@
 #include <tuple>                // for key/value pair
 
 
-using kv_t std::tuple<std::string,std::vector<std::string>>;
+using kv_t = std::tuple<std::string,std::vector<std::string>>;
 using shard_t = std::vector<kv_t>;
 using shard_vector_t = std::vector<shard_t>;
 
@@ -42,7 +42,7 @@ void MapReduce::MR_Emit(const std::string& key, const std::string& value) {
 
 	if (!found) {
 		mutexes[key] = mutex_ptr(new std::mutex);
-		shard_vector_t[shard_id] = tuple<key, std::vector<std::string>()>;
+		shard_vector_t[shard_id] = std::tuple<key, std::vector<std::string>()>;
 	}
 }
 

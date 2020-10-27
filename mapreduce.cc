@@ -25,7 +25,7 @@ mutex_map_t mutexes; //there is one mutex in here for every vector in the emit m
 void initialize_emit_map()
 {
 	int x = 0;
-	while ( x ++< 4 )
+	while ( x ++< num_partitions )
 	{
 		shard_t shard;
 		emit_map.push_back(shard);

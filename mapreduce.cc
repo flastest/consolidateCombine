@@ -16,24 +16,32 @@ using shard_vector_t = std::vector<shard_t>;
 
 using mutex_ptr = std::unique_ptr<std::mutex>; //was originally a shared ptr
 using mutex_map_t = std::map<std::string, mutex_ptr>;
-
-int num_partitions = num_reducers;
-
 //this is an example of what a lock will look like std::lock_guard<std::mutex> guard(*MUTEXES[KEY]);
 
-shard_vector_t emit_map[num_partitions];
+int num_partitions = 4;
+shard_vector_t emit_map;
 mutex_map_t mutexes; //there is one mutex in here for every vector in the emit map
 
+void initialize_emit_map()
+{
+	int x = 0;
+	while ( x ++< 4 )
+	{
+		shard_t shard;
+		emit_map.push_back(shard);
+	}
+
+}
 
 void MapReduce::MR_Emit(const std::string& key, const std::string& value) {
 	bool found = false;
 	unsigned long shard_id = MR_DefaultHashPartition(key, num_partitions);
-	std::unordered_map<std::string,double>::const_iterator got = mymap.find (input);
+	shard_t::const_iterator got = emit_map[shard_id].find(key);
 
-	if (got == mymap.end())
+	if (got == emit_map[shard_id].end())
 	{
 		mutexes[key] = mutex_ptr(new std::mutex);
-		std::stack vals();
+		std::stack<std::string> vals;
 		vals.push(value);
 		emit_map[shard_id][key] = vals;
 	}
@@ -49,21 +57,22 @@ void MapReduce::MR_Emit(const std::string& key, const std::string& value) {
 unsigned long MapReduce::MR_DefaultHashPartition(const std::string& key, int num_partitions) {
 
 	unsigned long hash = 5381;
-	char c;
-	for(c : key) //iterate thru the letters in key
+
+	for(char c : key) //iterate thru the letters in key
 	{
 		hash = hash * 33 + (int) c;
 	}
 	return hash % num_partitions;
 }
 
-
 static std::string get_next(const std::string& key, int partition_number) {
 		//we need to pop from the stack
-		std::lock_guard guard(*mutexes[key]);
+		std::lock_guard<std::mutex> guard(*mutexes[key]);
 
 
-		return shards[partition_number].pop();
+		auto ret = emit_map[partition_number][key].top();
+		emit_map[partition_number][key].pop();
+		return ret;
 
 }
 

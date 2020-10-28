@@ -6,7 +6,7 @@
 #include <fstream>      //also reading from a file
 #include "mapreduce.cc"
 
-void map(const char* file_name) {
+void Map(const char* file_name) {
     FILE *fp = fopen(file_name, "r");
     assert(fp != NULL);
     char *line = NULL;
@@ -14,7 +14,7 @@ void map(const char* file_name) {
     while (getline(&line, &size, fp) != -1) {
         char *token, *dummy = line;
         while ((token = strsep(&dummy, " \t\n\r")) != NULL) {
-            MR_Emit(token, "1");
+            MapReduce::MR_Emit(token, "1");
         }
     }
     free(line);

@@ -9,6 +9,9 @@
 #include <vector>
 #include <tuple>        //for key/value pair
 #include <stack>  		//for stack in kv_t
+#include <thread>			//include thread
+#include <stdio.h>
+#include <string.h>
 
 using shard_t = std::unordered_map<std::string,std::stack<std::string>>; //shard of kv pairs
 using shard_vector_t = std::vector<shard_t>;
@@ -18,7 +21,7 @@ using mutex_ptr = std::unique_ptr<std::mutex>; //was originally a shared ptr
 using mutex_map_t = std::map<std::string, mutex_ptr>;
 //this is an example of what a lock will look like std::lock_guard<std::mutex> guard(*MUTEXES[KEY]);
 
-int num_partitions = 4;
+int num_partitions;
 shard_vector_t emit_map;
 mutex_map_t mutexes; //there is one mutex in here for every vector in the emit map
 
@@ -34,7 +37,6 @@ void initialize_emit_map()
 }
 
 void MapReduce::MR_Emit(const std::string& key, const std::string& value) {
-	bool found = false;
 	unsigned long shard_id = MR_DefaultHashPartition(key, num_partitions);
 	shard_t::const_iterator got = emit_map[shard_id].find(key);
 
@@ -81,12 +83,41 @@ void MapReduce::MR_Run(int argc, char* argv[],
             reducer_t reduce, int num_reducers,
             partitioner_t partition) {
 
+		(void) num_mappers;
 		initialize_emit_map();
+		num_partitions = num_reducers;
 
 		std::vector<std::string> filenames;
 
 		for (int i = 0; i <= argc; i++) {
 			map(argv[i]);
+		}
+
+		//keeping track of the reducer threads
+		std::vector<std::thread> reducer_threads;
+		//for each reducer, get what it needs to do, give it a thread
+		for (int i = 0; i < num_reducers; i++) {
+			//create a thread and add it to the vector
+																						//= means by default, things that are accessed in the lambda (from outside) will be by value.
+																						//     ^(in this case, that's only i)
+																						//&emit_map means that emit_map is passed by reference
+																						// this is because we want the value of i not to change when the thread is run
+																						//but we don't want to copy emit map, which is why we access it by reference
+			reducer_threads.push_back(std::thread ([=, &emit_map](){
+				//this will store all the keys from the reducer's shard
+				std::vector<std::string> keys;
+				keys.reserve(emit_map[i].size());
+
+				//for each key in this reducer's slice, reduce that key
+				for(std::string k : keys) {
+					//we call the reduce function that takes a key, and reduces it into one value
+					reduce(k, get_next, i);
+				}
+			}));
+		}
+
+		for(int thread =0; thread< num_reducers; thread++){
+			reducer_threads[thread].join();
 		}
 
 
@@ -99,6 +130,7 @@ void MapReduce::MR_Run(int argc, char* argv[],
 		}
 		strstream.str();
 */
+//	delete[] emit_map;
 
 
     return;

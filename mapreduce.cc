@@ -81,6 +81,24 @@ void MapReduce::MR_Run(int argc, char* argv[],
             reducer_t reduce, int num_reducers,
             partitioner_t partition) {
 
+		initialize_emit_map();
+
+		std::vector<std::string> filenames;
+
+		for (int i = 0; i <= argc; i++) {
+			map(argv[i]);
+		}
+
+
+/* if we don't care about separate files.
+		std::stringstream strstream;
+
+		for (int i = 1; i < argc; i++) {
+			std::ifstream in(argv[i]);       // Will throw if it fails
+			strstream << in.rdbuf();    // Read entire file at once
+		}
+		strstream.str();
+*/
 
 
     return;

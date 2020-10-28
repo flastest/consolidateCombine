@@ -6,18 +6,19 @@
 #include <fstream>      //also reading from a file
 #include "mapreduce.cc"
 
-void Map(std::string file_name) {
-    std::ifstream myfile;
-    myfile.open(file_name);
-    assert(myfile.is_open());
-    std::string line;
-    std::string word;
-    //this while loop iterates thru each word, delimiting at spaces, tabs, and newlines
-    while (getline(myfile, line,' ')) { //TO DO: make this delimit tabs and spaces
-        MapReduce::MR_Emit(word, "1");
-        
+void map(const char* file_name) {
+    FILE *fp = fopen(file_name, "r");
+    assert(fp != NULL);
+    char *line = NULL;
+    size_t size = 0;
+    while (getline(&line, &size, fp) != -1) {
+        char *token, *dummy = line;
+        while ((token = strsep(&dummy, " \t\n\r")) != NULL) {
+            MR_Emit(token, "1");
+        }
     }
-    myfile.close();
+    free(line);
+    fclose(fp);
 }
 
 void Reduce(std::string key, MapReduce::getter_t get_next, int partition_number) {

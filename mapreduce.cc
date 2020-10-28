@@ -25,6 +25,9 @@ int num_partitions;
 shard_vector_t emit_map;
 mutex_map_t mutexes; //there is one mutex in here for every vector in the emit map
 
+
+MapReduce::partitioner_t partitioner;
+
 void initialize_emit_map()
 {
 	int x = 0;
@@ -37,7 +40,7 @@ void initialize_emit_map()
 }
 
 void MapReduce::MR_Emit(const std::string& key, const std::string& value) {
-	unsigned long shard_id = MR_DefaultHashPartition(key, num_partitions);
+	unsigned long shard_id = partitioner(key, num_partitions);
 	shard_t::const_iterator got = emit_map[shard_id].find(key);
 
 	if (got == emit_map[shard_id].end())
@@ -83,12 +86,14 @@ void MapReduce::MR_Run(int argc, char* argv[],
             reducer_t reduce, int num_reducers,
             partitioner_t partition) {
 
+		partitioner = partition;
 		(void) num_mappers;
 		initialize_emit_map();
 		num_partitions = num_reducers;
 
 		std::vector<std::string> filenames;
 
+		//TO DO: PARALyZE THE MAPPING
 		for (int i = 0; i <= argc; i++) {
 			map(argv[i]);
 		}

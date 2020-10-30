@@ -87,14 +87,20 @@ void MapReduce::MR_Run(int argc, char* argv[],
             partitioner_t partition) {
 
 		partitioner = partition;
-		(void) num_mappers;
 		initialize_emit_map();
 		num_partitions = num_reducers;
 
 		std::vector<std::string> filenames;
 
-		//TO DO: PARALyZE THE MAPPING
-		for (int i = 0; i <= argc; i++) {
+		//keeping track of mapper_threads
+		std::vector<std::thread> mapper_threads;
+
+		for (int i = 0; i < num_mappers; i++) {
+			mapper_threads.push_back(std::thread([=,&argv](){
+				for (int j = i; j < argc; j = j + num_mappers) {
+					map(argv[j]);
+				}
+			}));
 			map(argv[i]);
 		}
 

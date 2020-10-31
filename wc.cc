@@ -46,7 +46,7 @@ void Reduce(std::string key, MapReduce::getter_t get_next, int partition_number)
 
 int main(int argc, char *argv[]) {
     //std::cout << "wc:main() Begin" << std::endl;
-    MapReduce::MR_Run(argc, argv, Map, 2, Reduce, 2, MapReduce::MR_DefaultHashPartition);
+    MapReduce::MR_Run(argc, argv, Map, 4, Reduce, 4, MapReduce::MR_DefaultHashPartition);
     for(auto kv : counts) {
         std::cout << "[" <<kv.first <<"] : " <<kv.second <<", "<<std::flush;
     }

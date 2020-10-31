@@ -6,7 +6,7 @@
 #include <fstream>      //also reading from a file
 #include "mapreduce.cc"
 
-/*
+
 void Map(const char* file_name) {
     std::cout << "wc:Map() Begin" << std::endl;
     FILE *fp = fopen(file_name, "r");
@@ -23,20 +23,6 @@ void Map(const char* file_name) {
     free(line);
     fclose(fp);
 }
-*/
-void Map(std::string file_name) {
-    std::ifstream myfile;
-    myfile.open(file_name);
-    assert(myfile.is_open());
-    std::string line;
-    //this while loop iterates thru each word, delimiting at spaces, tabs, and newlines
-    while (getline(myfile, line,' ')) {
-	std::cout << line << std::endl;
-        //MapReduce::MR_Emit(line, "1");
-    }
-    myfile.close();
-} 
-
 
 void Reduce(std::string key, MapReduce::getter_t get_next, int partition_number) {
     std::cout << "wc:Reduce() Begin" << std::endl;

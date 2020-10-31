@@ -61,7 +61,7 @@ void MapReduce::MR_Emit(const std::string& key, const std::string& value) {
 
 	//if the key exists, then we add to the vector
 	std::lock_guard<std::mutex> guard(*mutexes[key]);
-	//std::cout <<" EMITTING adding [" <<value<<"] to the ["<<key<<"] we're adding to\n";
+	std::cout <<" EMITTING adding [" <<value<<"] to the ["<<key<<"] in " << shard_id <<"shard\n";
 	emit_map[shard_id][key].push(value);
 
 }
@@ -81,13 +81,22 @@ unsigned long MapReduce::MR_DefaultHashPartition(const std::string& key, int num
 }
 
 static std::string get_next(const std::string& key, int partition_number) {
+		if (emit_map[partition_number][key].empty())
+		{
+			return "";
+		}
+
 		//we need to pop from the stack
-		//std::cout <<"getnext"<<std::endl;
+		std::cout <<"getnext"<<std::endl;
 		std::lock_guard<std::mutex> guard(*mutexes[key]);
+		std::cout<<"mutex locked\n";
+		std::cout<<"partition number: "<<partition_number<<std::endl;
 
-
+		std::cout<<"the key is [" <<key<<"]\n";
 		auto ret = emit_map[partition_number][key].top();
 		emit_map[partition_number][key].pop();
+		if(ret.empty()) ret = "";
+		std::cout << "returning " <<ret<<std::endl;
 		return ret;
 
 }
@@ -141,17 +150,19 @@ void MapReduce::MR_Run(int argc, char* argv[],
 					for(auto kv : emit_map[i]) {
     				keys.push_back(kv.first);
 					}
-					//std::cout<<"there are "<<i<< " keys in this shard\n";
+					std::cout<<" REDUCE THREDA: there are "<<keys.size()<< " keys in shard " <<i<<"\n";
 
 
-					//std::cout<<"list of keys in this shard is: "<<std::flush;
+					std::cout<<" REDUCE THREAD: list of keys in this shard is: "<<std::flush;
 					for(std::string k : keys){
-						//std::cout<<"["<<k<<"], ";
+						std::cout<<"["<<k<<"], ";
 					}
 					std::cout<<std::endl;
+
 					//for each key in this reducer's slice, reduce that key
 					for(std::string k : keys) {
 						//we call the reduce function that takes a key, and reduces it into one value
+						std::cout<<"REDUCING KEY ["<<k<<"] \n";
 						reduce(k, get_next, i);
 					}
 				}
@@ -159,8 +170,8 @@ void MapReduce::MR_Run(int argc, char* argv[],
 		}
 
 		for(int thread = 0; thread < num_reducers; thread++){
-			std::cout<<"joining threads for reducing"<<std::endl;
 			reducer_threads[thread].join();
+			std::cout<<"joining threads for reducing"<<std::endl;
 		}
 
 

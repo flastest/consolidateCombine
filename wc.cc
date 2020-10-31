@@ -6,11 +6,12 @@
 #include <fstream>      //also reading from a file
 #include "mapreduce.cc"
 #include <unordered_map>
-
+#include <mutex>
 
 using wc_t = std::unordered_map<std::string,int>; //shard of kv pairs
 
 wc_t counts;
+std::mutex count_mutex;
 
 
 void Map(const char* file_name) {
@@ -38,13 +39,14 @@ void Reduce(std::string key, MapReduce::getter_t get_next, int partition_number)
         count++;
         val = get_next(key, partition_number);
     }
+    std::lock_guard<std::mutex> guard(count_mutex);
     counts[key] = count;
-    std::cout << key << count << std::endl;
+    //std::cout << key << count << std::endl;
 }
 
 int main(int argc, char *argv[]) {
     //std::cout << "wc:main() Begin" << std::endl;
-    MapReduce::MR_Run(argc, argv, Map, 1, Reduce, 1, MapReduce::MR_DefaultHashPartition);
+    MapReduce::MR_Run(argc, argv, Map, 2, Reduce, 2, MapReduce::MR_DefaultHashPartition);
     for(auto kv : counts) {
         std::cout << "[" <<kv.first <<"] : " <<kv.second <<", "<<std::flush;
     }

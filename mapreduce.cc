@@ -20,6 +20,7 @@ using shard_vector_t = std::vector<shard_t>;
 using mutex_ptr = std::unique_ptr<std::mutex>; //was originally a shared ptr
 using mutex_map_t = std::map<std::string, mutex_ptr>;
 //this is an example of what a lock will look like std::lock_guard<std::mutex> guard(*MUTEXES[KEY]);
+std::mutex god_mutex;
 
 int num_partitions;
 shard_vector_t emit_map;
@@ -50,10 +51,18 @@ void MapReduce::MR_Emit(const std::string& key, const std::string& value) {
 
 	if (got == emit_map[shard_id].end())
 	{
-		//std::cout << "the key doesn't exist" << std::endl;
-		mutexes[key] = mutex_ptr(new std::mutex);
-		std::stack<std::string> vals;
-		emit_map[shard_id][key] = vals;
+		//we can only make 1 mutex at a time
+		std::lock_guard<std::mutex> guard(god_mutex);
+		shard_t::const_iterator got = emit_map[shard_id].find(key);
+
+		if (got == emit_map[shard_id].end())
+		{
+			//std::cout << "the key doesn't exist" << std::endl;
+			mutexes[key] = mutex_ptr(new std::mutex);
+			std::stack<std::string> vals;
+			std::lock_guard<std::mutex> guard(*mutexes[key]);
+			emit_map[shard_id][key] = vals;
+		}
 	}
 	else {
 		//std::cout<<"the key does exist!\n";
@@ -61,7 +70,7 @@ void MapReduce::MR_Emit(const std::string& key, const std::string& value) {
 
 	//if the key exists, then we add to the vector
 	std::lock_guard<std::mutex> guard(*mutexes[key]);
-	std::cout <<" EMITTING adding [" <<value<<"] to the ["<<key<<"] in " << shard_id <<"shard\n";
+	//std::cout <<" EMITTING adding [" <<value<<"] to the ["<<key<<"] in " << shard_id <<"shard\n";
 	emit_map[shard_id][key].push(value);
 
 }
@@ -87,16 +96,16 @@ static std::string get_next(const std::string& key, int partition_number) {
 		}
 
 		//we need to pop from the stack
-		std::cout <<"getnext"<<std::endl;
+		//std::cout <<"getnext"<<std::endl;
 		std::lock_guard<std::mutex> guard(*mutexes[key]);
-		std::cout<<"mutex locked\n";
-		std::cout<<"partition number: "<<partition_number<<std::endl;
+		//std::cout<<"mutex locked\n";
+		//std::cout<<"partition number: "<<partition_number<<std::endl;
 
-		std::cout<<"the key is [" <<key<<"]\n";
+		//std::cout<<"the key is [" <<key<<"]\n";
 		auto ret = emit_map[partition_number][key].top();
 		emit_map[partition_number][key].pop();
 		if(ret.empty()) ret = "";
-		std::cout << "returning " <<ret<<std::endl;
+		//std::cout << "returning " <<ret<<std::endl;
 		return ret;
 
 }
@@ -105,7 +114,7 @@ void MapReduce::MR_Run(int argc, char* argv[],
             mapper_t map, int num_mappers,
             reducer_t reduce, int num_reducers,
             partitioner_t partition) {
-		std::cout <<"MR_RUN\n";
+		//std::cout <<"MR_RUN\n";
 		partitioner = partition;
 		num_partitions = num_reducers;
 		initialize_emit_map();
@@ -116,7 +125,7 @@ void MapReduce::MR_Run(int argc, char* argv[],
 		std::vector<std::thread> mapper_threads;
 
 		for (int i = 0; i < num_mappers; i++) {
-			std::cout<<"FILENAME IS "<< argv[i]<<std::endl;
+			//std::cout<<"FILENAME IS "<< argv[i]<<std::endl;
 			mapper_threads.push_back(
 				std::thread([=](){
 					for (int j = i+1; j < argc; j = j + num_mappers) {
@@ -128,8 +137,9 @@ void MapReduce::MR_Run(int argc, char* argv[],
 
 		//join them
 		for(int thread = 0; thread < num_mappers; thread++){
+			std::cout<<"joining mapper "<<thread<<std::endl;
 			mapper_threads[thread].join();
-			std::cout<<"joining threads for mapping"<<std::endl;
+			std::cout<<"joined mapper "<<thread<<std::endl;
 		}
 
 		//keeping track of the reducer threads
@@ -150,19 +160,21 @@ void MapReduce::MR_Run(int argc, char* argv[],
 					for(auto kv : emit_map[i]) {
     				keys.push_back(kv.first);
 					}
-					std::cout<<" REDUCE THREDA: there are "<<keys.size()<< " keys in shard " <<i<<"\n";
+					//std::cout<<" REDUCE THREDA: there are "<<keys.size()<< " keys in shard " <<i<<"\n";
 
 
-					std::cout<<" REDUCE THREAD: list of keys in this shard is: "<<std::flush;
+					//std::cout<<" REDUCE THREAD: list of keys in this shard is: "<<std::flush;
+					/*
 					for(std::string k : keys){
 						std::cout<<"["<<k<<"], ";
 					}
 					std::cout<<std::endl;
+					*/
 
 					//for each key in this reducer's slice, reduce that key
 					for(std::string k : keys) {
 						//we call the reduce function that takes a key, and reduces it into one value
-						std::cout<<"REDUCING KEY ["<<k<<"] \n";
+						//std::cout<<"REDUCING KEY ["<<k<<"] \n";
 						reduce(k, get_next, i);
 					}
 				}
@@ -170,8 +182,10 @@ void MapReduce::MR_Run(int argc, char* argv[],
 		}
 
 		for(int thread = 0; thread < num_reducers; thread++){
+			std::cout<<"joining reducer "<<thread<<std::endl;
 			reducer_threads[thread].join();
-			std::cout<<"joining threads for reducing"<<std::endl;
+			std::cout<<"joined reducer "<<thread<<std::endl;
+			//std::cout<<"joining threads for reducing"<<std::endl;
 		}
 
 

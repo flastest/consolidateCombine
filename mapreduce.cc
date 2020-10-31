@@ -30,30 +30,38 @@ MapReduce::partitioner_t partitioner;
 
 void initialize_emit_map()
 {
-	int x = 0;
-	while ( x ++< num_partitions )
+	//std::cout<<"begin inititize"<<std::endl;
+	for (int x = 0; x < num_partitions; x++)
 	{
 		shard_t shard;
 		emit_map.push_back(shard);
 	}
-
+	//std::cout << "emit map is this siseze:  "<<emit_map.size();
+	//std::cout<<" inititize mipmap is over\n"<<std::endl;
 }
 
 void MapReduce::MR_Emit(const std::string& key, const std::string& value) {
+	//std::cout<<"EMITTING. emit map length is "<<emit_map.size()<<std::endl;
+	//std::cout << "the key is [" << key << "] The value is ["<< value << "]" <<std::endl;
 	unsigned long shard_id = partitioner(key, num_partitions);
+	//std::cout<<" AAAAAAAAAAAAAAAAAAAAAAAAAAAH "<<std::endl;
+
 	shard_t::const_iterator got = emit_map[shard_id].find(key);
 
 	if (got == emit_map[shard_id].end())
 	{
+		//std::cout << "the key doesn't exist" << std::endl;
 		mutexes[key] = mutex_ptr(new std::mutex);
 		std::stack<std::string> vals;
-		vals.push(value);
 		emit_map[shard_id][key] = vals;
 	}
-
+	else {
+		//std::cout<<"the key does exist!\n";
+	}
 
 	//if the key exists, then we add to the vector
 	std::lock_guard<std::mutex> guard(*mutexes[key]);
+	//std::cout <<" EMITTING adding [" <<value<<"] to the ["<<key<<"] we're adding to\n";
 	emit_map[shard_id][key].push(value);
 
 }
@@ -61,17 +69,20 @@ void MapReduce::MR_Emit(const std::string& key, const std::string& value) {
 //this should return the size of each slice
 unsigned long MapReduce::MR_DefaultHashPartition(const std::string& key, int num_partitions) {
 
+	//std::cout<<"DEFAULT HASH PARTITON"<<std::endl;
 	unsigned long hash = 5381;
 
 	for(char c : key) //iterate thru the letters in key
 	{
 		hash = hash * 33 + (int) c;
 	}
+	//std::cout<<"hash is "<<hash%num_partitions<<std::endl;
 	return hash % num_partitions;
 }
 
 static std::string get_next(const std::string& key, int partition_number) {
 		//we need to pop from the stack
+		//std::cout <<"getnext"<<std::endl;
 		std::lock_guard<std::mutex> guard(*mutexes[key]);
 
 
@@ -85,10 +96,10 @@ void MapReduce::MR_Run(int argc, char* argv[],
             mapper_t map, int num_mappers,
             reducer_t reduce, int num_reducers,
             partitioner_t partition) {
-
+		std::cout <<"MR_RUN\n";
 		partitioner = partition;
-		initialize_emit_map();
 		num_partitions = num_reducers;
+		initialize_emit_map();
 
 		std::vector<std::string> filenames;
 
@@ -96,12 +107,20 @@ void MapReduce::MR_Run(int argc, char* argv[],
 		std::vector<std::thread> mapper_threads;
 
 		for (int i = 0; i < num_mappers; i++) {
-			mapper_threads.push_back(std::thread([=](){
-				for (int j = i; j < argc; j = j + num_mappers) {
-					map(argv[j]);
+			std::cout<<"FILENAME IS "<< argv[i]<<std::endl;
+			mapper_threads.push_back(
+				std::thread([=](){
+					for (int j = i+1; j < argc; j = j + num_mappers) {
+						map(argv[j]);
+					}
 				}
-			}));
-			map(argv[i]);
+			));
+		}
+
+		//join them
+		for(int thread = 0; thread < num_mappers; thread++){
+			mapper_threads[thread].join();
+			std::cout<<"joining threads for mapping"<<std::endl;
 		}
 
 		//keeping track of the reducer threads
@@ -114,34 +133,35 @@ void MapReduce::MR_Run(int argc, char* argv[],
 																						//&emit_map means that emit_map is passed by reference
 																						// this is because we want the value of i not to change when the thread is run
 																						//but we don't want to copy emit map, which is why we access it by reference
-			reducer_threads.push_back(std::thread ([=](){
+			reducer_threads.push_back(
+				std::thread ([=](){
 				//this will store all the keys from the reducer's shard
-				std::vector<std::string> keys;
-				keys.reserve(emit_map[i].size());
+					std::vector<std::string> keys;
+					keys.reserve(emit_map[i].size());
+					for(auto kv : emit_map[i]) {
+    				keys.push_back(kv.first);
+					}
+					//std::cout<<"there are "<<i<< " keys in this shard\n";
 
-				//for each key in this reducer's slice, reduce that key
-				for(std::string k : keys) {
-					//we call the reduce function that takes a key, and reduces it into one value
-					reduce(k, get_next, i);
+
+					//std::cout<<"list of keys in this shard is: "<<std::flush;
+					for(std::string k : keys){
+						//std::cout<<"["<<k<<"], ";
+					}
+					std::cout<<std::endl;
+					//for each key in this reducer's slice, reduce that key
+					for(std::string k : keys) {
+						//we call the reduce function that takes a key, and reduces it into one value
+						reduce(k, get_next, i);
+					}
 				}
-			}));
+			));
 		}
 
-		for(int thread =0; thread< num_reducers; thread++){
+		for(int thread = 0; thread < num_reducers; thread++){
+			std::cout<<"joining threads for reducing"<<std::endl;
 			reducer_threads[thread].join();
 		}
-
-
-/* if we don't care about separate files.
-		std::stringstream strstream;
-
-		for (int i = 1; i < argc; i++) {
-			std::ifstream in(argv[i]);       // Will throw if it fails
-			strstream << in.rdbuf();    // Read entire file at once
-		}
-		strstream.str();
-*/
-//	delete[] emit_map;
 
 
     return;

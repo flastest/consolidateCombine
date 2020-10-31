@@ -96,7 +96,7 @@ void MapReduce::MR_Run(int argc, char* argv[],
 		std::vector<std::thread> mapper_threads;
 
 		for (int i = 0; i < num_mappers; i++) {
-			mapper_threads.push_back(std::thread([=,&argv](){
+			mapper_threads.push_back(std::thread([=](){
 				for (int j = i; j < argc; j = j + num_mappers) {
 					map(argv[j]);
 				}
@@ -114,7 +114,7 @@ void MapReduce::MR_Run(int argc, char* argv[],
 																						//&emit_map means that emit_map is passed by reference
 																						// this is because we want the value of i not to change when the thread is run
 																						//but we don't want to copy emit map, which is why we access it by reference
-			reducer_threads.push_back(std::thread ([=, &emit_map](){
+			reducer_threads.push_back(std::thread ([=](){
 				//this will store all the keys from the reducer's shard
 				std::vector<std::string> keys;
 				keys.reserve(emit_map[i].size());

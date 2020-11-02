@@ -5,10 +5,16 @@
 #include <iostream>     //for reading from file
 #include <fstream>      //also reading from a file
 #include "mapreduce.cc"
+#include <unordered_map>
+
+
+using wc_t = std::unordered_map<std::string,int>; //shard of kv pairs
+
+wc_t counts;
 
 
 void Map(const char* file_name) {
-    std::cout << "wc:Map() Begin" << std::endl;
+    //std::cout << "wc:Map() Begin" << std::endl;
     FILE *fp = fopen(file_name, "r");
     assert(fp != NULL);
     char *line = NULL;
@@ -25,18 +31,24 @@ void Map(const char* file_name) {
 }
 
 void Reduce(std::string key, MapReduce::getter_t get_next, int partition_number) {
-    std::cout << "wc:Reduce() Begin" << std::endl;
+    //std::cout << "wc:Reduce() Begin" << std::endl;
     int count = 0;
     std::string val = get_next(key, partition_number);
     while (!val.empty()) {
         count++;
         val = get_next(key, partition_number);
     }
+    counts[key] = count;
     std::cout << key << count << std::endl;
 }
 
 int main(int argc, char *argv[]) {
-    std::cout << "wc:main() Begin" << std::endl;
+    //std::cout << "wc:main() Begin" << std::endl;
     MapReduce::MR_Run(argc, argv, Map, 1, Reduce, 1, MapReduce::MR_DefaultHashPartition);
+    for(auto kv : counts) {
+        std::cout << "[" <<kv.first <<"] : " <<kv.second <<", "<<std::flush;
+    }
+    std::cout<<std::endl;
+
     return 0;
 }

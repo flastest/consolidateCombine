@@ -8,6 +8,9 @@
 #include <unordered_map>
 #include <mutex>
 
+const int NUM_MAPPERS = 4;
+const int NUM_REDUCERS = 4;
+
 using wc_t = std::unordered_map<std::string,int>; //shard of kv pairs
 
 wc_t counts;
@@ -46,7 +49,7 @@ void Reduce(std::string key, MapReduce::getter_t get_next, int partition_number)
 
 int main(int argc, char *argv[]) {
     //std::cout << "wc:main() Begin" << std::endl;
-    MapReduce::MR_Run(argc, argv, Map, 4, Reduce, 4, MapReduce::MR_DefaultHashPartition);
+    MapReduce::MR_Run(argc, argv, Map, NUM_MAPPERS, Reduce, NUM_REDUCERS, MapReduce::MR_DefaultHashPartition);
     for(auto kv : counts) {
         std::cout << "[" <<kv.first <<"] : " <<kv.second <<", "<<std::flush;
     }

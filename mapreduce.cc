@@ -13,6 +13,8 @@
 #include <stdio.h>
 #include <string.h>
 
+const bool DEBUG = false;
+
 using shard_t = std::unordered_map<std::string,std::stack<std::string>>; //shard of kv pairs
 using shard_vector_t = std::vector<shard_t>;
 
@@ -137,9 +139,9 @@ void MapReduce::MR_Run(int argc, char* argv[],
 
 		//join them
 		for(int thread = 0; thread < num_mappers; thread++){
-			std::cout<<"joining mapper "<<thread<<std::endl;
+			if (DEBUG) std::cout<<"joining mapper "<<thread<<std::endl;
 			mapper_threads[thread].join();
-			std::cout<<"joined mapper "<<thread<<std::endl;
+			if (DEBUG) std::cout<<"joined mapper "<<thread<<std::endl;
 		}
 
 		//keeping track of the reducer threads
@@ -182,9 +184,9 @@ void MapReduce::MR_Run(int argc, char* argv[],
 		}
 
 		for(int thread = 0; thread < num_reducers; thread++){
-			std::cout<<"joining reducer "<<thread<<std::endl;
+			if (DEBUG) std::cout<<"joining reducer "<<thread<<std::endl;
 			reducer_threads[thread].join();
-			std::cout<<"joined reducer "<<thread<<std::endl;
+			if (DEBUG) std::cout<<"joined reducer "<<thread<<std::endl;
 			//std::cout<<"joining threads for reducing"<<std::endl;
 		}
 

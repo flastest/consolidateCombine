@@ -20,6 +20,9 @@ eitan:
 wc: wc.o mapreduce.o
 	$(CXX) $(CXX_NODB) -o $(SRC) $(SRC).o
 
+mf: mf.o mapreduce.o
+	$(CXX) $(CXX_NODB) -o $@ $<
+
 debug: 
 	$(CXX) -o $(SRC) $(SRC).cc $(CXX_DB)
 
@@ -33,4 +36,4 @@ helgrind: all
 	$(CXX) $(CXX_STD) $(CXX_NODB) -c -o $@ $<
 
 clean:
-	rm -fv *.o $(SRC) $(SRC)
+	rm -fv *.o wc mf

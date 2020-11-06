@@ -60,15 +60,17 @@ void Reduce(std::string key, MapReduce::getter_t get_next, int partition_number)
     std::string val = get_next(key, partition_number);
     while (!val.empty()) {
         friend_name.append(val);
-	friend_name.append(" ");
+	   friend_name.append(" ");
         val = get_next(key, partition_number);
     }
-    std::lock_guard<std::mutex> guard(mf_mutex);
-    if (mutual_friends[friend_name].empty())
-        mutual_friends[friend_name] = key;
-    else {
-        mutual_friends[friend_name].append(", ");
-        mutual_friends[friend_name].append(key);
+    {
+        std::lock_guard<std::mutex> guard(mf_mutex);
+        if (mutual_friends[friend_name].empty())
+            mutual_friends[friend_name] = key;
+        else {
+            mutual_friends[friend_name].append(", ");
+            mutual_friends[friend_name].append(key);
+        }
     }
 }
 

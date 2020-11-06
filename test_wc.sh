@@ -20,12 +20,12 @@ echo "Test 4:    4     |  large |    2    |     1    "
 echo "Test 5:    4     |  large |    1    |     2    "
 echo "Test 6:   10     |  large |    4    |     4    "
 echo
-make wc &> /dev/null
+make wc-capture &> /dev/null
 
 # Test 1: one small file single threaded
 echo -n "Test 1: "
 cor="[aaaa] : 3, [bbbb] : 2,"
-out="$(./wc wc-in/aaaa.in)"
+out="$(./wc-capture wc-in/aaaa.in)"
 if [[ $out =~ "[aaaa] : 3, [bbbb] : 2," ]]; then
     echo -e "${GREEN}passed${NC}"
 else
@@ -39,7 +39,7 @@ fi
 # Test 2: multiple small files single threaded
 echo -n "Test 2: "
 cor="[aaaa] : 6, [bbbb] : 4,"
-out="$(./wc wc-in/aaaa.in wc-in/aaaa.in)"
+out="$(./wc-capture wc-in/aaaa.in wc-in/aaaa.in)"
 if [[ $out =~ "[aaaa] : 6, [bbbb] : 4," ]]; then
     echo -e "${GREEN}passed${NC}"
 else
@@ -53,7 +53,7 @@ fi
 # Test 3: multiple large files single threaded
 echo -n "Test 3: "
 cor="[aaaa] : 130944, [bbbb] : 65472, [a_32736] : 4, [b_16368] : 4,"
-out="$(./wc wc-in/aaaaaaaaa.in wc-in/aaaaaaaaa.in wc-in/aaaaaaaaa.in wc-in/aaaaaaaaa.in)"
+out="$(./wc-capture wc-in/aaaaaaaaa.in wc-in/aaaaaaaaa.in wc-in/aaaaaaaaa.in wc-in/aaaaaaaaa.in)"
 if [[ $out =~ "[aaaa] : 130944, [bbbb] : 65472, [a_32736] : 4, [b_16368] : 4," ]]; then
     echo -e "${GREEN}passed${NC}"
 else
@@ -69,7 +69,7 @@ export MAPS="2"
 # Test 4: multiple large files two threads
 echo -n "Test 4: "
 cor="[aaaa] : 130944, [bbbb] : 65472, [a_32736] : 4, [b_16368] : 4,"
-out="$(./wc wc-in/aaaaaaaaa.in wc-in/aaaaaaaaa.in wc-in/aaaaaaaaa.in wc-in/aaaaaaaaa.in)"
+out="$(./wc-capture wc-in/aaaaaaaaa.in wc-in/aaaaaaaaa.in wc-in/aaaaaaaaa.in wc-in/aaaaaaaaa.in)"
 if [[ $out =~ "[aaaa] : 130944, [bbbb] : 65472, [a_32736] : 4, [b_16368] : 4," ]]; then
     echo -e "${GREEN}passed${NC}"
 else
@@ -86,7 +86,7 @@ export REDS="2"
 # Test 5: 
 echo -n "Test 5: "
 cor="[aaaa] : 130944, [bbbb] : 65472, [a_32736] : 4, [b_16368] : 4,"
-out="$(./wc wc-in/aaaaaaaaa.in wc-in/aaaaaaaaa.in wc-in/aaaaaaaaa.in wc-in/aaaaaaaaa.in)"
+out="$(./wc-capture wc-in/aaaaaaaaa.in wc-in/aaaaaaaaa.in wc-in/aaaaaaaaa.in wc-in/aaaaaaaaa.in)"
 if [[ $out =~ "[aaaa] : 130944, [bbbb] : 65472, [a_32736] : 4, [b_16368] : 4," ]]; then
     echo -e "${GREEN}passed${NC}"
 else
@@ -103,7 +103,7 @@ export REDS="4"
 # Test 6:
 echo -n "Test 6: "
 cor="[aaaa] : 327360, [bbbb] : 163680, [a_32736] : 10, [b_16368] : 10,"
-out="$(./wc wc-in/aaaaaaaaa.in wc-in/aaaaaaaaa.in wc-in/aaaaaaaaa.in wc-in/aaaaaaaaa.in wc-in/aaaaaaaaa.in wc-in/aaaaaaaaa.in wc-in/aaaaaaaaa.in wc-in/aaaaaaaaa.in wc-in/aaaaaaaaa.in wc-in/aaaaaaaaa.in)"
+out="$(./wc-capture wc-in/aaaaaaaaa.in wc-in/aaaaaaaaa.in wc-in/aaaaaaaaa.in wc-in/aaaaaaaaa.in wc-in/aaaaaaaaa.in wc-in/aaaaaaaaa.in wc-in/aaaaaaaaa.in wc-in/aaaaaaaaa.in wc-in/aaaaaaaaa.in wc-in/aaaaaaaaa.in)"
 if [[ $out =~ "[aaaa] : 327360, [bbbb] : 163680, [a_32736] : 10, [b_16368] : 10," ]]; then
     echo -e "${GREEN}passed${NC}"
 else
@@ -119,12 +119,12 @@ echo "PERFORMANCE TEST"
 echo 
 export MAPS="1"
 export REDS="1"
-echo "Time Mapreduce on enwik8 1 mapper 1 reducer: "
-time ./wc wc-in/enwik8 &> /dev/null|
+echo "Time Mapreduce on 8 huge files with 1 mapper 1 reducer: "
+time ./wc-capture wc-in/bee.in wc-in/bee.in wc-in/bee.in wc-in/bee.in wc-in/bee.in wc-in/bee.in wc-in/bee.in wc-in/bee.in &> /dev/null
 echo
 export MAPS="8"
 export REDS="8"
-echo "Time Mapreduce on enwik8 8 mapper 8 reducer: "
-time ./wc wc-in/enwik8 &> /dev/null
+echo "Time Mapreduce on 8 huge files with 8 mapper 8 reducer: "
+time ./wc-capture wc-in/bee.in wc-in/bee.in wc-in/bee.in wc-in/bee.in wc-in/bee.in wc-in/bee.in wc-in/bee.in wc-in/bee.in &> /dev/null
 echo
 make clean &> /dev/null

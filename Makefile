@@ -8,6 +8,7 @@ CXX_NODB  = $(CXX_STD) $(CXX_W) $(CXX_GDB) -pthread -lpthread
 CXX_DB    = $(CXX_NODB) -DDEBUG
 CXX_SAN   = $(CXX_DB)  $(CXX_DB)
 SRC       = wc
+CAP	  = wc-capture
 
 .cc.o:
 	$(CXX) $(CXX_NODB) -c -O3 $<
@@ -19,6 +20,9 @@ eitan:
 
 wc: wc.o mapreduce.o
 	$(CXX) $(CXX_NODB) -o $(SRC) $(SRC).o
+
+wc-capture: wc-capture.o mapreduce.o
+	$(CXX) $(CXX_NODB) -o $(CAP) $(CAP).o
 
 mf: mf.o mapreduce.o
 	$(CXX) $(CXX_NODB) -o $@ $<

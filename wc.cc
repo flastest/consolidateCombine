@@ -9,8 +9,8 @@
 #include <mutex>
 #include <stdlib.h>
 
-const int NUM_MAPPERS = atoi(getenv("MAPS"));
-const int NUM_REDUCERS = atoi(getenv("REDS"));
+const int NUM_MAPPERS = 1;
+const int NUM_REDUCERS = 1;
 
 using wc_t = std::unordered_map<std::string,int>; //shard of kv pairs
 

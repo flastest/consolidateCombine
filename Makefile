@@ -27,10 +27,10 @@ debug:
 	$(CXX) -o $(SRC) $(SRC).cc $(CXX_DB)
 
 valgrind: all
-	valgrind --leak-check=full --show-leak-kinds=all ./$(SRC)
+	valgrind --leak-check=full --show-leak-kinds=all ./$(SRC) lotr.txt
 
 helgrind: all
-	valgrind --tool=helgrind ./$(SRC)
+	valgrind --tool=helgrind ./$(SRC) lotr.txt
 
 %.o: %.cc %.hh
 	$(CXX) $(CXX_STD) $(CXX_NODB) -c -o $@ $<

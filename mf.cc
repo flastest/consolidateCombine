@@ -29,13 +29,7 @@ void Map(const char* file_name) {
         char *token = line;
         char *root_friend = strtok(line,";"); //Get the root friend.
         token = strtok(NULL,",");
-        /*char *token, *dummy = root_friend;
-        while ((token = strsep(&dummy, " ")) != NULL) {
-            std::cout<<token<<":"<<root_friend<<std::endl;
-            //MapReduce::MR_Emit(token, "1");
-            //dummy = token;
-        }*/
-        ///*
+
         char* next;
         while (token != NULL && *token != '\r' && *token != '\n') {
             std::string s(token);
@@ -53,7 +47,7 @@ void Map(const char* file_name) {
             //std::cout <<"printing s again"<<s<<std::endl;
             std::cout <<s<<":"<<root_friend<<std::endl;
             token = next;
-        }//*/
+        }
     }
     free(line);
     fclose(fp);
@@ -61,24 +55,21 @@ void Map(const char* file_name) {
 
 
 void Reduce(std::string key, MapReduce::getter_t get_next, int partition_number) {
-    //std::cout << "wc:Reduce() Begin" << std::endl;
-    int count = 0;
     std::vector<std::string> list_of_friends;
     std::string friend_name; //this is the name of all the people with the same mutual friend
     std::string val = get_next(key, partition_number);
     while (!val.empty()) {
         friend_name.append(val);
+	friend_name.append(" ");
         val = get_next(key, partition_number);
     }
     std::lock_guard<std::mutex> guard(mf_mutex);
     if (mutual_friends[friend_name].empty())
-
         mutual_friends[friend_name] = key;
     else {
         mutual_friends[friend_name].append(", ");
         mutual_friends[friend_name].append(key);
     }
-    //std::cout << key << count << std::endl;
 }
 
 int main(int argc, char *argv[]) {
@@ -86,10 +77,9 @@ int main(int argc, char *argv[]) {
     
     MapReduce::MR_Run(argc, argv, Map, 4, Reduce, 4, MapReduce::MR_DefaultHashPartition);
     for(auto kv : mutual_friends) {
-        std::cout << "[" <<kv.first <<"] : " <<kv.second <<", "<<std::flush;
+        std::cout << "[ " <<kv.first <<"] : " << kv.second << ", "<<std::endl;
     }
-    std::cout<<std::endl;
+    //std::cout<<std::endl;
     
-    Map(argv[1]);
     return 0;
 }

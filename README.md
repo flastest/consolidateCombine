@@ -13,6 +13,12 @@ words in it. We checked by hand to make sure the results were correct AND the sa
 
 We saw that times got super a ton better as we added more threads when running `time ./wc aaaaaaaaa.in aaaaaaaaa.in aaaaaaaaa.in aaaaaaaaa.in aaaaaaaaa.in aaaaaaaaa.in `
 
+#### wc-capture
+
+there's also a wc-capture that is used in the test. we hid it away so you dont accidentally use it. 
+You can use wc.cc freely on whatever you want. it's not what's used in our test though, it's just for your viewing pleasure.
+
+
 you can change the numbers of threads used in wc.cc. There are some consts you can change.
 
 

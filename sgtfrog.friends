@@ -1,8 +1,6 @@
-Keroro;Fuyuki,Giroro,Tamama
+Keroro;Fuyuki,Giroro,Tamama,Pururu
 Tamama;Keroro,Momoka,Giroro
-Fuyuki;Momoka,Keroro,Natsumi
+Fuyuki;Momoka,Keroro,Natsumi,Chiruyo
 Natsumi;Fuyuki,Giroro
-Tororo;
-Giroro;Keroro,Tamama,Natsumi
-Dororo;Koyuki
-Zoruru;
+Giroro;Keroro,Tamama,Natsumi,Garuru,Pururu
+Dororo;Koyuki,Pururu

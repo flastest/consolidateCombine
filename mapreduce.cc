@@ -59,20 +59,17 @@ void MapReduce::MR_Emit(const std::string& key, const std::string& value) {
 
 		if (got == emit_map[shard_id].end())
 		{
-			//std::cout << "the key doesn't exist" << std::endl;
+			//std::cout << "[" << key << "] doesn't exist" << std::endl;
 			mutexes[key] = mutex_ptr(new std::mutex);
 			std::stack<std::string> vals;
 			std::lock_guard<std::mutex> guard(*mutexes[key]);
 			emit_map[shard_id][key] = vals;
 		}
 	}
-	else {
-		//std::cout<<"the key does exist!\n";
-	}
 
 	//if the key exists, then we add to the vector
 	std::lock_guard<std::mutex> guard(*mutexes[key]);
-	//std::cout <<" EMITTING adding [" <<value<<"] to the ["<<key<<"] in " << shard_id <<"shard\n";
+	//std::cout <<" EMITTING adding [" <<value<<"] to ["<<key<<"] in " << "shard " << shard_id << "\n";
 	emit_map[shard_id][key].push(value);
 
 }

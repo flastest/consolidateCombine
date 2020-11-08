@@ -120,11 +120,11 @@ echo
 export MAPS="1"
 export REDS="1"
 echo "Time Mapreduce on 8 huge files with 1 mapper 1 reducer: "
-time ./wc-capture wc-in/bee.in wc-in/bee.in wc-in/bee.in wc-in/bee.in wc-in/bee.in wc-in/bee.in wc-in/bee.in wc-in/bee.in &> /dev/null
+time ./wc-capture wc-in/copperfield.in wc-in/copperfield.in wc-in/copperfield.in wc-in/copperfield.in wc-in/copperfield.in wc-in/copperfield.in wc-in/copperfield.in wc-in/copperfield.in &> /dev/null
 echo
 export MAPS="8"
 export REDS="8"
 echo "Time Mapreduce on 8 huge files with 8 mapper 8 reducer: "
-time ./wc-capture wc-in/bee.in wc-in/bee.in wc-in/bee.in wc-in/bee.in wc-in/bee.in wc-in/bee.in wc-in/bee.in wc-in/bee.in &> /dev/null
+time ./wc-capture wc-in/copperfield.in wc-in/copperfield.in wc-in/copperfield.in wc-in/copperfield.in wc-in/copperfield.in wc-in/copperfield.in wc-in/copperfield.in wc-in/copperfield.in &> /dev/null
 echo
 make clean &> /dev/null

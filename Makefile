@@ -40,4 +40,4 @@ helgrind: all
 	$(CXX) $(CXX_STD) $(CXX_NODB) -c -o $@ $<
 
 clean:
-	rm -fv *.o wc mf
+	rm -fv *.o wc mf wc-capture

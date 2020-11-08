@@ -42,10 +42,7 @@ void Map(const char* file_name) {
                 s = s.substr(0,s.find('\r'));
             }
             MapReduce::MR_Emit(s, root_friend);
-            
-            //std::cout <<"friend is still" <<s<<std::endl;
-            //std::cout <<"printing s again"<<s<<std::endl;
-            std::cout <<s<<":"<<root_friend<<std::endl;
+            //std::cout <<s<<"<-"<<root_friend<<std::endl;
             token = next;
         }
     }
@@ -58,12 +55,24 @@ void Reduce(std::string key, MapReduce::getter_t get_next, int partition_number)
     std::vector<std::string> list_of_friends;
     std::string friend_name; //this is the name of all the people with the same mutual friend
     std::string val = get_next(key, partition_number);
+    std::string first_val;
+    if (!val.empty()) {
+	first_val = val;
+        val = get_next(key, partition_number);
+	if (!val.empty()) {
+	    friend_name.append(first_val);
+            friend_name.append(" ");
+            friend_name.append(val);
+	    friend_name.append(" ");
+	    val = get_next(key, partition_number);
+	}
+    }
     while (!val.empty()) {
         friend_name.append(val);
-	   friend_name.append(" ");
+	friend_name.append(" ");
         val = get_next(key, partition_number);
     }
-    {
+    if (!friend_name.empty()) {
         std::lock_guard<std::mutex> guard(mf_mutex);
         if (mutual_friends[friend_name].empty())
             mutual_friends[friend_name] = key;
@@ -77,7 +86,7 @@ void Reduce(std::string key, MapReduce::getter_t get_next, int partition_number)
 int main(int argc, char *argv[]) {
     num_friends = argc-1;
     
-    MapReduce::MR_Run(argc, argv, Map, 4, Reduce, 4, MapReduce::MR_DefaultHashPartition);
+    MapReduce::MR_Run(argc, argv, Map, 2, Reduce, 2, MapReduce::MR_DefaultHashPartition);
     for(auto kv : mutual_friends) {
         std::cout << "[ " <<kv.first <<"] : " << kv.second << ", "<<std::endl;
     }

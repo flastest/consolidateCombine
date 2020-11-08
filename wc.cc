@@ -9,8 +9,8 @@
 #include <mutex>
 #include <stdlib.h>
 
-const int NUM_MAPPERS = 2;
-const int NUM_REDUCERS = 2;
+const int NUM_MAPPERS = 8;
+const int NUM_REDUCERS = 8;
 
 using wc_t = std::unordered_map<std::string,int>; //shard of kv pairs
 

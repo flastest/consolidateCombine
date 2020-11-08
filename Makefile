@@ -27,6 +27,9 @@ wc-capture: wc-capture.o mapreduce.o
 mf: mf.o mapreduce.o
 	$(CXX) $(CXX_NODB) -o $@ $<
 
+mf-capture: mf-capture.o mapreduce.o # TO DOOOOOOOO
+	$(CXX) $(CXX_NODB) -o mf-capture mf-capture.o
+
 debug: 
 	$(CXX) -o $(SRC) $(SRC).cc $(CXX_DB)
 

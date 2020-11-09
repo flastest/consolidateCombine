@@ -69,9 +69,9 @@ void MapReduce::MR_Emit(const std::string& key, const std::string& value) {
 	
 	//might need to lock the emit map
 
+	std::lock_guard<std::mutex> shart_guard(*shart_mutex_vicky[shard_id]);
 	shard_t::const_iterator got = emit_map[shard_id].find(key);
 //	std::lock_guard<std::mutex> emit_guard(emit_lock);
-	std::lock_guard<std::mutex> shart_guard(*shart_mutex_vicky[shard_id]);
 		
 
 	//SHARD MUTEX???????????

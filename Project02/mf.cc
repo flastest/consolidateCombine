@@ -25,20 +25,20 @@ int num_friends;
 
 
 //maps from a file name
-// emits the lotr character and who they're friends with
+//emits the lotr character and who they're friends with
 void Map(const char* file_name) {
     if(DEBUG)
     {
-	std::lock_guard<std::mutex> guard(print_mutex);
-	std::cout << "Map() Begin" << std::endl;
+        std::lock_guard<std::mutex> guard(print_mutex);
+        std::cout << "Map() Begin" << std::endl;
     }
 
     FILE *fp = fopen(file_name, "r");
     assert(fp != NULL);
     char *line = NULL;
     size_t size = 0;
+    
     //get all the lines
-
     while (getline(&line, &size, fp) != -1) {
         
         if(DEBUG)
@@ -55,7 +55,6 @@ void Map(const char* file_name) {
         char* next;
 
         //within each line, get every friend of the first character
-        
         while (token != NULL && *token != '\r' && *token != '\n') {
 	    
             std::string s(token);
@@ -64,7 +63,6 @@ void Map(const char* file_name) {
             //trim the newline off of s if its the last character in the line
             if (!next) 
             {
-                //std::cout<<"length of "<<s<< " is "<<static_cast<int>(s.length())<<std::endl;
                 s = s.substr(0,s.find('\n'));
                 s = s.substr(0,s.find('\r'));
             }
@@ -88,9 +86,9 @@ void Map(const char* file_name) {
         {
             std::lock_guard<std::mutex> guard(print_mutex);
             std::cout <<"emitted people for "<<root_friend<<":"<<emitted_vals<<std::endl;
-        }
-	
+        }	
     }
+    
     //releasing the memory we took
     free(line);
     fclose(fp);
@@ -112,6 +110,7 @@ void Reduce(std::string key, MapReduce::getter_t get_next, int partition_number)
 	std::lock_guard<std::mutex> guard(print_mutex);
 	std::cout << "Reduce() Begin: " << key << std::endl;
     }
+    
     std::string friend_name; //this is the group of all the people with the same mutual friend
     
     //this is the first friend in that group
@@ -139,6 +138,7 @@ void Reduce(std::string key, MapReduce::getter_t get_next, int partition_number)
         }
         //end scope of lock
     }
+    
     if(DEBUG)
     {
 	std::lock_guard<std::mutex> guard(print_mutex);

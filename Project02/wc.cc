@@ -19,7 +19,6 @@ std::mutex count_mutex;
 
 
 void Map(const char* file_name) {
-    //std::cout << "wc:Map() Begin" << std::endl;
     FILE *fp = fopen(file_name, "r");
     assert(fp != NULL);
     char *line = NULL;
@@ -27,7 +26,6 @@ void Map(const char* file_name) {
     while (getline(&line, &size, fp) != -1) {
         char *token, *dummy = line;
         while ((token = strsep(&dummy, " \t\n\r")) != NULL) {
-	    //std::cout<<token<<std::endl;
             MapReduce::MR_Emit(token, "1");
         }
     }
@@ -36,7 +34,6 @@ void Map(const char* file_name) {
 }
 
 void Reduce(std::string key, MapReduce::getter_t get_next, int partition_number) {
-    //std::cout << "wc:Reduce() Begin" << std::endl;
     int count = 0;
     std::string val = get_next(key, partition_number);
     while (!val.empty()) {
@@ -45,11 +42,9 @@ void Reduce(std::string key, MapReduce::getter_t get_next, int partition_number)
     }
     std::lock_guard<std::mutex> guard(count_mutex);
     counts[key] = count;
-    //std::cout << key << count << std::endl;
 }
 
 int main(int argc, char *argv[]) {
-    //std::cout << "wc:main() Begin" << std::endl;
     MapReduce::MR_Run(argc, argv, Map, NUM_MAPPERS, Reduce, NUM_REDUCERS, MapReduce::MR_DefaultHashPartition);
 
     for(auto kv : counts) {

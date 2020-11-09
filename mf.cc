@@ -25,6 +25,10 @@ int num_friends;
 //maps from a file name
 // emits the lotr character and who they're friends with
 void Map(const char* file_name) {
+    {
+	std::lock_guard<std::mutex> guard(print_mutex);
+	std::cout << "Map() Begin" << std::endl;
+    }
     FILE *fp = fopen(file_name, "r");
     assert(fp != NULL);
     char *line = NULL;
@@ -81,39 +85,34 @@ void Map(const char* file_name) {
     //releasing the memory we took
     free(line);
     fclose(fp);
+    {
+	std::lock_guard<std::mutex> guard(print_mutex);
+	std::cout << "Map() End" << std::endl;
+    }
 }
 
 
 //takes a key. the vals associated with that key are all the mutual friends of the key
 // compiles all the vals, and associates that key with it.
 void Reduce(std::string key, MapReduce::getter_t get_next, int partition_number) {
-    std::vector<std::string> list_of_friends;
+    {
+	std::lock_guard<std::mutex> guard(print_mutex);
+	std::cout << "Reduce() Begin: " << key << std::endl;
+    }
     std::string friend_name; //this is the group of all the people with the same mutual friend
     
     //this is the first friend in that group
     std::string val = get_next(key, partition_number);
-    std::string first_val;
-    
-    //make sure things aren't empty
-    if (!val.empty()) {
-	    first_val = val;
-        val = get_next(key, partition_number);
-    	if (!val.empty()) {
-    	    friend_name.append(first_val);
-            friend_name.append(" ");
-            friend_name.append(val);
-    	    friend_name.append(" ");
-    	    val = get_next(key, partition_number);
-    	}
-    }
+    int num_name = 0;
     while (!val.empty()) {
         friend_name.append(val);
-	    friend_name.append(" ");
+	friend_name.append(" ");
+	num_name++;
         val = get_next(key, partition_number);
     }
     //if friend isn't empty either add key to the existing group of people wiht mutual friends
     // or make a new list and add that new group with key to the list of mutual friends.
-    if (!friend_name.empty()) {
+    if (num_name >= 2) {
         std::lock_guard<std::mutex> guard(mf_mutex);
         //this group isn't kept track of yet, add it to mutual_friends
         if (mutual_friends[friend_name].empty())
@@ -127,16 +126,19 @@ void Reduce(std::string key, MapReduce::getter_t get_next, int partition_number)
         }
         //end scope of lock
     }
+    {
+	std::lock_guard<std::mutex> guard(print_mutex);
+	std::cout << "Reduce() End: " << key << std::endl;
+    }
 }
 
 int main(int argc, char *argv[]) {
     num_friends = argc-1;
     
-    MapReduce::MR_Run(argc, argv, Map, 2, Reduce, 1, MapReduce::MR_DefaultHashPartition);
+    MapReduce::MR_Run(argc, argv, Map, 3, Reduce, 3, MapReduce::MR_DefaultHashPartition);
     for(auto kv : mutual_friends) {
         std::cout << "[ " <<kv.first <<"] : " << kv.second << ", "<<std::endl;
     }
-    //std::cout<<std::endl;
     
     return 0;
 }

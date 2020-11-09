@@ -6,13 +6,14 @@
 #include <unordered_map>        //for unordered map
 #include <memory> 		//for unique ptr to mutex array
 #include <mutex>		//for mutex
-#include <vector>
+#include <vector>  
 #include <tuple>        //for key/value pair
 #include <stack>  		//for stack in kv_t
 #include <thread>			//include thread
 #include <stdio.h>
 #include <string.h>
-
+//          1. LOCK ALL OF EMIT AND MAKE SURE THE TIME IS GOOD
+//          2. LOCK EMIT MAP!!!!
 const bool DEBUG = false;
 
 using shard_t = std::unordered_map<std::string,std::stack<std::string>>; //shard of kv pairs
@@ -22,6 +23,7 @@ using shard_vector_t = std::vector<shard_t>;
 using mutex_ptr = std::unique_ptr<std::mutex>; //was originally a shared ptr
 using mutex_map_t = std::map<std::string, mutex_ptr>;
 //this is an example of what a lock will look like std::lock_guard<std::mutex> guard(*MUTEXES[KEY]);
+
 
 
 //god mutex locks all the mutexes. we can't create a new mutex without the creator mutex
@@ -34,6 +36,8 @@ int num_partitions;
 shard_vector_t emit_map;
 mutex_map_t mutexes; //there is one mutex in here for every vector in the emit map
 
+mutex_map_t shart_mutex_vicky;
+
 
 MapReduce::partitioner_t partitioner;
 
@@ -44,6 +48,11 @@ void initialize_emit_map()
 	{
 		shard_t shard;
 		emit_map.push_back(shard);
+		//vector of shard mutices
+		//i know that's not the plural of mutex
+		shart_mutex_vicky[x] = mutex_ptr(new std::mutex);
+
+
 	}
 	//std::cout << "emit map is this siseze:  "<<emit_map.size();
 	//std::cout<<" inititize mipmap is over\n"<<std::endl;
@@ -55,34 +64,37 @@ void MapReduce::MR_Emit(const std::string& key, const std::string& value) {
 	unsigned long shard_id = partitioner(key, num_partitions);
 
 
-	std::lock_guard<std::mutex> emit_guard(emit_lock);
 
+	
 	//might need to lock the emit map
-	shard_t::const_iterator got = emit_map[shard_id].find(key);
 
+	shard_t::const_iterator got = emit_map[shard_id].find(key);
+//	std::lock_guard<std::mutex> emit_guard(emit_lock);
+	std::lock_guard<std::mutex> shart_guard(*shart_mutex_vicky[shard_id]);
+		
 
 	//SHARD MUTEX???????????
 	if (got == emit_map[shard_id].end())
 	{
 		//we can only make 1 mutex at a time
-		std::lock_guard<std::mutex> guard(god_mutex);
+//		std::lock_guard<std::mutex> guard(god_mutex);
 		//ok, we have the god_mutex now.
 
 		//check again to make sure that we still need to make a new mutex
-		shard_t::const_iterator got = emit_map[shard_id].find(key);
+		//shard_t::const_iterator got_again = emit_map[shard_id].find(key);
 
-		if (got == emit_map[shard_id].end())
-		{
+		//if (got == emit_map[shard_id].end())
+		//{
 			//std::cout << "[" << key << "] doesn't exist" << std::endl;
 			mutexes[key] = mutex_ptr(new std::mutex);
 			std::stack<std::string> vals;
-			std::lock_guard<std::mutex> guard(*mutexes[key]);
+//			std::lock_guard<std::mutex> guard(*mutexes[key]);
 			emit_map[shard_id][key] = vals;
-		}
+		//}
 	}
 
 	//if the key exists, then we add to the vector
-	std::lock_guard<std::mutex> guard(*mutexes[key]);
+//	std::lock_guard<std::mutex> guard(*mutexes[key]);
 	//std::cout <<" EMITTING adding [" <<value<<"] to ["<<key<<"] in " << "shard " << shard_id << "\n";
 	emit_map[shard_id][key].push(value);
 

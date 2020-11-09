@@ -35,7 +35,7 @@ void Map(const char* file_name) {
     size_t size = 0;
     //get all the lines
     while (getline(&line, &size, fp) != -1) {
-        if(DEBUG)
+//      if(DEBUG)
         {
             std::lock_guard<std::mutex> guard(print_mutex);
             std::cout <<"current line in map: "<<line<<std::endl;
@@ -46,15 +46,11 @@ void Map(const char* file_name) {
         char* rest = line; 
         char* root_friend = strtok_r(rest,";",&rest);
         token = strtok_r(rest,",",&rest);
-        //char *root_friend = strtok(line,";"); //Get the root friend.
-        //token = strtok(NULL,",");
-
-
         char* next;
+
         //within each line, get every friend of the first character
         while (token != NULL && *token != '\r' && *token != '\n') {
             std::string s(token);
-            //next = strtok(NULL,",");
             next = strtok_r(rest,",",&rest);
             //trim the newline off of s if its the last character in the line
             if (!next) 
@@ -64,7 +60,7 @@ void Map(const char* file_name) {
                 s = s.substr(0,s.find('\r'));
             }
             //emit a set of friends
-            if(DEBUG)
+//          if(DEBUG)
             {
                 std::lock_guard<std::mutex> guard(print_mutex);
                 std::cout <<"emitting that these 2 are friends: " <<s<<"<-"<<root_friend<<std::endl;
@@ -76,7 +72,7 @@ void Map(const char* file_name) {
             emitted_vals.append(s);
             token = next;
         }
-        if(DEBUG)
+//      if(DEBUG)
         {
             std::lock_guard<std::mutex> guard(print_mutex);
             std::cout <<"emitted people for "<<root_friend<<":"<<emitted_vals<<std::endl;
@@ -135,7 +131,7 @@ void Reduce(std::string key, MapReduce::getter_t get_next, int partition_number)
 int main(int argc, char *argv[]) {
     num_friends = argc-1;
     
-    MapReduce::MR_Run(argc, argv, Map, 3, Reduce, 3, MapReduce::MR_DefaultHashPartition);
+    MapReduce::MR_Run(argc, argv, Map, 2, Reduce, 2, MapReduce::MR_DefaultHashPartition);
     for(auto kv : mutual_friends) {
         std::cout << "[ " <<kv.first <<"] : " << kv.second << ", "<<std::endl;
     }

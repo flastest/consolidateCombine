@@ -17,8 +17,8 @@ echo "CSCI 1/1:    1     |  small |    1    |     1    "
 echo "KERO 2/1:    2     |   med  |    2    |     1    "
 echo "KERO 1/2:    2     |   med  |    1    |     2    "
 echo "LOTR 2/2:    3     |  large |    2    |     2    "
-echo "LOTR 4/4:    3     |  large |    4    |     4    "
-echo "LOTR 8/8:    3     |  large |    8    |     8    "
+echo "LOTR 3/4:    3     |  large |    3    |     4    "
+echo "LOTR 3/8:    3     |  large |    3    |     8    "
 echo
 make mf-capture &> /dev/null
 
@@ -36,11 +36,26 @@ else
     echo $out
 fi
 
-# Test 2: multiple small files single threaded
+export MAPS="2"
+# Test 2: multiple medium sized files
 echo -n "Test 2: "
-cor="[aaaa] : 6, [bbbb] : 4,"
-out="$(./wc-capture wc-in/aaaa.in wc-in/aaaa.in)"
-if [[ $out =~ "[aaaa] : 6, [bbbb] : 4," ]]; then
+cor="[ Natsumi Tamama Keroro Pururu Garuru ] : Giroro,
+[ Dororo Chiruyo Giroro Keroro Garuru ] : Pururu,
+[ Giroro Tororo Pururu ] : Garuru,
+[ Chiruyo Natsumi Keroro ] : Fuyuki,
+[ Giroro Keroro ] : Tamama,
+[ Fuyuki Tamama ] : Momoka,
+[ Giroro Fuyuki Tamama Pururu ] : Keroro,
+[ Giroro Fuyuki ] : Natsumi,"
+out="$(./mf-capture friends/sgtfrog.friends friends/garurushotai.friends)"
+if [[ $out =~ "[ Natsumi Tamama Keroro Pururu Garuru ] : Giroro,
+[ Dororo Chiruyo Giroro Keroro Garuru ] : Pururu,
+[ Giroro Tororo Pururu ] : Garuru,
+[ Chiruyo Natsumi Keroro ] : Fuyuki,
+[ Giroro Keroro ] : Tamama,
+[ Fuyuki Tamama ] : Momoka,
+[ Giroro Fuyuki Tamama Pururu ] : Keroro,
+[ Giroro Fuyuki ] : Natsumi," ]]; then
     echo -e "${GREEN}passed${NC}"
 else
     echo -e "${RED}failed${NC}"
@@ -125,6 +140,6 @@ echo
 export MAPS="8"
 export REDS="8"
 echo "Time Mapreduce on 8 huge files with 8 mapper 8 reducer: "
-time ./wc-capture wc-in/copperfield.in wc-in/copperfield.in wc-in/copperfield.in wc-in/copperfield.in wc-in/copperfield.in wc-in/copperfield.in wc-in/copperfield.in wc-in/copperfield.in &> /dev/null
+time ./mf-capture mf-in/copperfield.in wc-in/copperfield.in wc-in/copperfield.in wc-in/copperfield.in wc-in/copperfield.in wc-in/copperfield.in wc-in/copperfield.in wc-in/copperfield.in &> /dev/null
 echo
 make clean &> /dev/null

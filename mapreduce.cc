@@ -24,6 +24,7 @@ using mutex_ptr = std::unique_ptr<std::mutex>; //was originally a shared ptr
 using mutex_map_t = std::map<std::string, mutex_ptr>;
 //this is an example of what a lock will look like std::lock_guard<std::mutex> guard(*MUTEXES[KEY]);
 
+using shart_mutex_map_t = std::map<int, mutex_ptr>;
 
 
 //god mutex locks all the mutexes. we can't create a new mutex without the creator mutex
@@ -36,7 +37,7 @@ int num_partitions;
 shard_vector_t emit_map;
 mutex_map_t mutexes; //there is one mutex in here for every vector in the emit map
 
-mutex_map_t shart_mutex_vicky;
+shart_mutex_map_t shart_mutex_vicky;
 
 
 MapReduce::partitioner_t partitioner;

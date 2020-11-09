@@ -76,3 +76,7 @@ the person and one person from the list of their friends.
 you make friends by doing `make mf` (read: make mofo). then you can do `./mf friends/[file name] <more things in the friends folder>`. there are a lot of groups of friends in that folder. generally, you want to keep the things of certain types together. so garurushotai goes with sgtfrog, and lotr goes with fellowship and the hobbit. 
 
 
+#### test_mf
+
+don't do this yet
+
